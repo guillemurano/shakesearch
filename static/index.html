@@ -3,24 +3,66 @@
 
 <head>
   <meta charset="utf-8">
-  <title>ShakeSearch</title>
+  <title>The Complete Works of William Shakespeare</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.rawgit.com/Chalarangelo/mini.css/v3.0.1/dist/mini-default.min.css">
   <meta name="theme-color" content="#fafafa">
 </head>
 
 <body>
-    <p>
-        <form id="form">
-            <label for="query">Query</label>
-            <input type="text" id="query" name="query">
-            <button type="submit">Search</button>
-        </form>
-    </p>
-    <p>
-        <table id="table">
-          <tbody id="table-body"></tbody>
-        </table>
-    </p>
+    <div class="section">
+      <h3>The Complete Works of William Shakespeare</h3>
+      <form id="form">
+        <div class="input-group">
+          <input autocomplete="off" type="text" id="query" name="query" placeholder="Text to search..." onkeyup="Controller.enableSearch(event)">
+          <button id="searchButton" type="submit" class="primary bordered" disabled>Search</button>
+          <div class="row">
+            <label>
+              Close search: 
+              <input type="checkbox" id="type" name="type" value="near">
+            </label>
+          </div>
+        </div>
+        <div id="suggestionsGroup" class="hidden">
+          <span>Did you mean: </span>
+          <span id="suggestions"></span>
+        </div>
+      </form>
+    </div>
+    <div id="results" class="collapse hidden">
+    </div>
+    <div id="spinnerRow" class="row hidden">
+      <div class="col-sm-offset-6">
+        <div class="spinner primary"></div>
+      </div>
+    </div>
+    <div id="pagerRow" class="row hidden">
+      <div class="col-sm-1 col-sm-offset-4">
+          <button id="loadLessBtn" type="button" class="bordered" onclick="Controller.changePage(-1)"><</button>
+      </div>
+      <div class="col-sm-1">
+        <div style="margin-top: 1rem;" id="pgNumber"></div>
+      </div>
+      <div class="col-sm-1">
+        <button id="loadMoreBtn" type="button" class="bordered" onclick="Controller.changePage(1)">></button>
+      </div>
+    </div>
+    <div id="noResults" class="row hidden">
+      <div class="col-sm-12">
+        No Results to show.
+      </div>
+    </div>
+
+    <label id="modalControl" for="modal-control" class="hidden"></label>
+    <input type="checkbox" id="modal-control" class="modal">
+    <div>
+      <div class="card large" style="overflow: hidden;">
+        <label for="modal-control" class="modal-close" ></label>
+        <h3 id="searchNumber" class="section"></h3>
+        <p id="paragraph" class="section" style="overflow-y: auto;"></p>
+      </div>
+    </div>
+  <script src="typo/typo.js"></script>
   <script src="app.js"></script>
 </body>
 
