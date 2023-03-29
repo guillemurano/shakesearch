@@ -13,7 +13,7 @@ const Controller = {
   enableSearch: (e) => {
     const query = document.getElementById("query");
     if (query.value === "") {
-      document.getElementById("searchButton").disabled = true;
+      Array.from(document.getElementsByClassName("search")).forEach(el => (el.disabled = true));
       document.getElementById("suggestions").innerHTML = "";
       document.getElementById("suggestionsGroup").classList.add("hidden");
     }else if (query.value.length >= 4){
@@ -37,15 +37,33 @@ const Controller = {
           suggestions = []
           document.getElementById("suggestionsGroup").classList.remove("hidden");
         }
+        else {
+          document.getElementById("suggestionsGroup").classList.add("hidden");
+        }
       }, 1000);
     } else {
       document.getElementById("suggestions").innerHTML = "";
-      document.getElementById("searchButton").disabled = false;
+      Array.from(document.getElementsByClassName("search")).forEach(el => (el.disabled = false));
     }
   },
 
-  search: (ev) => {
+  search: (ev,type) => {
     ev.preventDefault();
+    document.getElementById("type").value = type;
+    let timeout = setInterval(() => {
+      const puns = [`<div>What a shame, this search is taking more time than expected...</div>`,
+      `<div>Yes, It's still loading...</div>`,
+      `<div>I'm deeply sorry for this delay...</div>`,
+      `<div>I'm looking for a proper answer to your request, it's taking a while...</div>`];
+      const wait = document.getElementById("waitMessage");
+      if (wait.classList.contains("hidden")) {
+        wait.classList.remove("hidden");
+        wait.innerHTML = puns[Math.floor(Math.random()*puns.length)];
+      } else {
+        wait.innerHTML += puns[Math.floor(Math.random()*puns.length)];
+      }
+    }, 7500);
+    document.getElementById("noResults").classList.add("hidden");
     const pager = document.getElementById("pagerRow");
     pager.classList.add("hidden");
     document.getElementById("results").innerHTML = "";
@@ -53,8 +71,11 @@ const Controller = {
     spinner.classList.remove("hidden");
     const form = document.getElementById("form");
     const data = Object.fromEntries(new FormData(form));
-    const response = fetch(`/search?q=${data.query}&t=${data.type}`).then((response) => {
+    const response = fetch(`/search?q=${data.query}&t=${type}`).then((response) => {
       response.json().then((result) => {
+        clearInterval(timeout);
+        const wait = document.getElementById("waitMessage");
+        wait.classList.add("hidden");
         localStorage.setItem("results", 
           JSON.stringify(
             Object.entries(result).map(([index, text]) => 
@@ -78,15 +99,21 @@ const Controller = {
 
   quoteElement: (result, idx, query) => {
     const search = query.split(" ");
-    const regex = new RegExp(search[0], "gi");
     const title = `${idx}. ${query}`;
-    const found = result.text.substring(140, 140+query.length+10).match(regex)[0];
-    const link = result.text
-                  .substring(140, 140+query.length+10)
-                  .replace(regex,`<span title="Click to show full paragraph." style="cursor:pointer;" onclick="Controller.getfullParagraph('${result.index}','${idx}')"><strong>${found}</strong></span>`);
+    let text = '';
 
-    const text = result.text.substring(0,140) + link + result.text.substring(140+query.length+10);
-    
+    if (type === 'broad') {
+      let begin = result.text.indexOf(search[0]);
+      begin = begin === -1 ? result.text.lastIndexOf(search[search.length -1]) - search[0].length : begin; 
+      const end = result.text.lastIndexOf(search[search.length -1]) !== -1 ? result.text.lastIndexOf(search[search.length -1]) + search[search.length -1].length : begin + query.length;
+      text = result.text.substring(0,begin) + 
+                  `<span title="Click to show full paragraph." class="query-link" onclick="Controller.getfullParagraph('${result.index}','${idx}')">${result.text.substring(begin,end)}</span>` +
+                  result.text.substring(end);
+    }
+    else {
+      const regex = new RegExp(search[0], "gi");
+      text = result.text.replace(regex, `<span title="Click to show full paragraph." class="query-link" onclick="Controller.getfullParagraph('${result.index}','${idx}')">${result.text.match(regex)[0]}</span>`)
+    }
 
     return `<input type="checkbox" id="collapse-section${idx}" aria-hidden="true" checked>
             <label for="collapse-section${idx}" aria-hidden="true">${title}</label>
@@ -105,8 +132,9 @@ const Controller = {
       const endSlice = Controller.pageSize() + (pageNumber * Controller.pageSize());
       const page = results.slice(pageNumber * Controller.pageSize(), endSlice);
       let quotes = "";
+      const type = document.getElementById("type").value;
       page.forEach((result, idx) => {
-        quotes += Controller.quoteElement(result, idx + 1 + (pageNumber * Controller.pageSize()), query);
+        quotes += Controller.quoteElement(result, idx + 1 + (pageNumber * Controller.pageSize()), query, type);
       });
       resultSection.innerHTML = quotes;
       if (pageNumber === 0) {
@@ -145,4 +173,3 @@ const Controller = {
 };
 
 const form = document.getElementById("form");
-form.addEventListener("submit", Controller.search);

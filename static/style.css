@@ -260,3 +260,14 @@ textarea {
     page-break-after: avoid;
   }
 }
+
+span.query-link {
+  color: #1976d2;
+  text-decoration: underline;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+span.query-link:hover{
+  color: #05386b;
+}

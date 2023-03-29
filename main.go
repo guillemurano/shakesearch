@@ -57,7 +57,7 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 			return
 		}
 		results := map[int]string{}
-		if searchType == "near" {
+		if searchType == "broad" {
 			results = searcher.LevSearch(query)
 		} else {
 			results = searcher.ExactSearch(query)
@@ -143,7 +143,7 @@ func CapitalizeFirst(sentence string) string {
 }
 
 func (s *Searcher) LevSearch(query string) map[int]string {
-	minDistance := len(query) * 2
+	minDistance := len(query) * 3
 	matchMap := map[int]string{}
 
 	for i := 0; i <= len(s.CompleteWorks)-len(query); i++ {
