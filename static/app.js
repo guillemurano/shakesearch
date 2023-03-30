@@ -97,7 +97,7 @@ const Controller = {
     });
   },
 
-  quoteElement: (result, idx, query) => {
+  quoteElement: (result, idx, query, type) => {
     const search = query.split(" ");
     const title = `${idx}. ${query}`;
     let text = '';
